@@ -1,0 +1,42 @@
+package edu.gatech.architourists;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+public class PRActivity extends Activity {
+	public static String TOUR_NAME = "edu.gatech.architourists.TOUR_NAME";
+	private static String[] allTourNames = { "Gaudi Tour",
+			"Old City - Gothic Quarter Tour", "Montjuic Tour",
+			"Plaça d'Espanya Tour" };
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_pr);
+
+		ListView pr_list = (ListView) findViewById(R.id.list_PR);
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, allTourNames);
+		pr_list.setAdapter(adapter);
+		pr_list.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Intent intent = new Intent(parent.getContext(),
+						TourActivity.class);
+				intent.putExtra(PRActivity.TOUR_NAME, allTourNames[position]);
+				startActivity(intent);
+
+			}
+		});
+
+	}
+}

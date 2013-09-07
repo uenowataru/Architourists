@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin" 
+    android:onClick="viewClick">
+
+    <TextView
+        android:id="@+id/text_archtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/archinfo_Title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <LinearLayout
+        android:id="@+id/linearlayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/text_archtitle"
+        android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/img_archphoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/sagrada_familia_b" />
+
+        <fragment
+            android:id="@+id/smallmap"
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            class="com.google.android.gms.maps.SupportMapFragment" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_archinfo"
+        android:layout_width="101dp"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/btn_userreview"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/linearlayout"
+        android:background="#888888"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:text="@string/archinfo_Info"
+        android:textColor="#ffffff" />
+
+    <Button
+        android:id="@+id/btn_userreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/centerdummy_text"
+        android:layout_alignTop="@+id/fulldetails_button"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="User Comments" />
+
+    <TextView
+        android:id="@+id/centerdummy_text"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignTop="@+id/btn_userreview"
+        android:layout_centerHorizontal="true" 
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <Button
+        android:id="@+id/fulldetails_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/centerdummy_text"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="Full Details"/>
+
+</RelativeLayout>

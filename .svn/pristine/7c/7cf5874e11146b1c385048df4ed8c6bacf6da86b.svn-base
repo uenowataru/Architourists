@@ -1,0 +1,119 @@
+package edu.gatech.architourists;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import edu.gatech.architourists.database.Architecture;
+import edu.gatech.architourists.database.ArchitectureDataSource;
+
+public class ArchInfoActivity extends Activity {
+	TextView archTitle;
+	TextView archInfo;
+	TextView archDescription;
+	ImageView archPhoto;
+	Button btn_UserReview;
+
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_archinfo);
+
+		Intent intent = getIntent();
+		final String name = intent.getStringExtra(ReviewActivity.SITE_NAME);
+
+		ArchitectureDataSource ds = new ArchitectureDataSource(this);
+		ds.open();
+		Architecture a = null;
+		try{
+			a = ds.getArchitecture(name);
+		}catch(Exception e){
+			Log.d("Database exception", "IDK why");
+		}
+		ds.close();
+		
+			
+		Log.d("log_tag",a.getRID() + " " + R.drawable.casa_mila_b);
+
+		String quickinfo, architect, moreinfo, year, style, program, location, cost, openhours;
+		int image;
+		//if (a != null) {
+			architect = a.getArchitect();
+			year = a.getYear();
+			style = a.getStyle();
+			program = a.getProgram();
+			location = a.getLocation();
+			cost = a.getCost();
+			openhours = a.getOpenhours();
+			//if(a.getRID()!=0)
+			image = a.getRID();
+			//else
+				//image = ArchTable.getImage(name);
+			
+			
+			quickinfo = ArchTable.getQuickInfo(name);
+			moreinfo = ArchTable.getText(name);
+		//} else {
+			/*
+			//when architecture was not found in database (functionality for debugging mode)
+			architect = "Some famous guy";
+			year = "1814";
+			style = "Moderm nourv";
+			program = "Church";
+			location = "Residencia Onix, 101 Cerdana Barcelona";
+			cost = "17 euros";
+			openhours = "8am~10pm; except Sundays";
+			
+			quickinfo = ArchTable.getQuickInfo(name);
+			moreinfo = ArchTable.getText(name);
+			image = ArchTable.getImage(name);
+			*/
+		//}
+		
+
+		archTitle = (TextView) findViewById(R.id.text_archtitle);
+		archTitle.setText(name);
+		archInfo = (TextView) findViewById(R.id.text_archinfo);
+		//archInfo.setPaintFlags(archInfo.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+
+		archInfo.setText("Architect: " + architect + "\nYear: " + year + "\nStyle: " + style 
+				+ "\nProgram: " + program + "\nLocation: " + location
+				+ "\nCost: " + cost + "\nOpen hours: " + openhours);
+		archDescription = (TextView) findViewById(R.id.text_archidescription);
+		archDescription.setText(moreinfo);
+		archDescription.setMovementMethod(new ScrollingMovementMethod());
+		archPhoto = (ImageView) findViewById(R.id.img_archphoto);
+		archPhoto.setImageResource(image);
+		btn_UserReview = (Button) findViewById(R.id.btn_userreview);
+
+		/*
+		 * archTitle = (TextView) findViewById(R.id.text_archtitle);
+		 * archTitle.setText(name); archInfo = (TextView)
+		 * findViewById(R.id.text_archinfo); archInfo.setText("Architect:" +
+		 * ArchTable.getArchitect(name) + "\n" + ArchTable.getQuickInfo(name));
+		 * archDescription = (TextView)
+		 * findViewById(R.id.text_archidescription);
+		 * archDescription.setText(ArchTable.getText(name));
+		 * archDescription.setMovementMethod(new ScrollingMovementMethod());
+		 * archPhoto = (ImageView) findViewById(R.id.img_archphoto);
+		 * archPhoto.setImageResource(ArchTable.getImage(name)); btn_UserReview
+		 * = (Button) findViewById(R.id.btn_userreview);
+		 */
+		btn_UserReview.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(ArchInfoActivity.this,
+						ReviewActivity.class);
+				intent.putExtra(ReviewActivity.SITE_NAME, name);
+				startActivity(intent);
+			}
+		});
+	}
+
+}

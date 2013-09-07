@@ -1,0 +1,613 @@
+package edu.gatech.architourists.database;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+import edu.gatech.architourists.R;
+
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
+
+public class ArchitectureDataSource {
+
+	// Database fields
+	private SQLiteDatabase database;
+	private MySQLiteHelper dbHelper;
+	private String[] allColumns = { MySQLiteHelper.COLUMN_ID,
+			MySQLiteHelper.COLUMN_SITE, MySQLiteHelper.COLUMN_ARCHITECT,
+			MySQLiteHelper.COLUMN_YEAR, MySQLiteHelper.COLUMN_STYLE,
+			MySQLiteHelper.COLUMN_PROGRAM, MySQLiteHelper.COLUMN_LOCATION,
+			MySQLiteHelper.COLUMN_LATITUDE, MySQLiteHelper.COLUMN_LONGITUDE,
+			MySQLiteHelper.COLUMN_COST, MySQLiteHelper.COLUMN_OPENHOURS,
+			MySQLiteHelper.COLUMN_RID, MySQLiteHelper.COLUMN_RIDI };
+
+	public ArchitectureDataSource(Context context) {
+		dbHelper = new MySQLiteHelper(context);
+	}
+
+	public void open() throws SQLException {
+		database = dbHelper.getWritableDatabase();
+	}
+
+	public void close() {
+		dbHelper.close();
+	}
+
+	public Architecture createArchitecture(String site, String architect,
+			String year, String style, String program, String location,
+			Double latitude, Double longitude, String cost, String openhours,
+			int rid, int ridi) {
+		ContentValues values = new ContentValues();
+		values.put(MySQLiteHelper.COLUMN_SITE, site);
+		values.put(MySQLiteHelper.COLUMN_ARCHITECT, architect);
+		values.put(MySQLiteHelper.COLUMN_YEAR, year);
+		values.put(MySQLiteHelper.COLUMN_STYLE, style);
+		values.put(MySQLiteHelper.COLUMN_PROGRAM, program);
+		values.put(MySQLiteHelper.COLUMN_LOCATION, location);
+		values.put(MySQLiteHelper.COLUMN_LATITUDE, latitude);
+		values.put(MySQLiteHelper.COLUMN_LONGITUDE, longitude);
+		values.put(MySQLiteHelper.COLUMN_COST, cost);
+		values.put(MySQLiteHelper.COLUMN_OPENHOURS, openhours);
+		values.put(MySQLiteHelper.COLUMN_RID, rid);
+		values.put(MySQLiteHelper.COLUMN_RIDI, ridi);
+		long insertId = database.insert(MySQLiteHelper.TABLE_ARCHITECTURE,
+				null, values);
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				allColumns, MySQLiteHelper.COLUMN_ID + " = " + insertId, null,
+				null, null, null);
+		cursor.moveToFirst();
+		Architecture newComment = cursorToArchitecture(cursor);
+		cursor.close();
+		return newComment;
+	}
+
+	public void deleteArchitecture(Architecture architecture) {
+		long id = architecture.getId();
+		System.out.println("Architecture deleted with id: " + id);
+		database.delete(MySQLiteHelper.TABLE_ARCHITECTURE,
+				MySQLiteHelper.COLUMN_ID + " = " + id, null);
+	}
+
+	public List<Architecture> getAllArchitectures() {
+		List<Architecture> architectures = new ArrayList<Architecture>();
+
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				allColumns, null, null, null, null, null);
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			Architecture architecture = cursorToArchitecture(cursor);
+			architectures.add(architecture);
+			cursor.moveToNext();
+		}
+		// Make sure to close the cursor
+		cursor.close();
+		return architectures;
+	}
+
+	/**
+	 * Get architecture by site name
+	 * 
+	 * @param site
+	 * @return
+	 */
+	public Architecture getArchitecture(String site) {
+		// Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+		// allColumns, null, null, null, null, null);
+		// cursor.moveToFirst();
+		// while (!cursor.getString(1).equals(site) && !cursor.isAfterLast()) {
+		// cursor.moveToNext();
+		// }
+		// Architecture a = null;
+		// if (cursor.getString(1).equals(site)) {
+		// a = cursorToArchitecture(cursor);
+		// }
+		// // Make sure to close the cursor
+		// cursor.close();
+		// return a;
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				allColumns, MySQLiteHelper.COLUMN_SITE + "=?",
+				new String[] { site }, null, null, null);
+		if (cursor != null) {
+			cursor.moveToFirst();
+		}
+		Architecture a = new Architecture();
+		a.setId(cursor.getLong(0));
+		a.setSite(cursor.getString(1));
+		a.setArchitect(cursor.getString(2));
+		a.setYear(cursor.getString(3));
+		a.setStyle(cursor.getString(4));
+		a.setProgram(cursor.getString(5));
+		a.setLocation(cursor.getString(6));
+		a.setLatitude(cursor.getDouble(7));
+		a.setLongitude(cursor.getDouble(8));
+		a.setCost(cursor.getString(9));
+		a.setOpenhours(cursor.getString(10));
+		a.setRID(cursor.getInt(11));
+		a.setRIDi(cursor.getInt(12));
+		// Make sure to close the cursor
+		cursor.close();
+		return a;
+	}
+
+	/**
+	 * Get architecture by its id
+	 * 
+	 * @param Id
+	 * @return
+	 */
+	public Architecture getArchitecture(long Id) {
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				allColumns, MySQLiteHelper.COLUMN_ID + "=?",
+				new String[] { String.valueOf(Id) }, null, null, null);
+		if (cursor != null) {
+			cursor.moveToFirst();
+		}
+		Architecture a = new Architecture();
+		a.setId(cursor.getLong(0));
+		a.setSite(cursor.getString(1));
+		a.setArchitect(cursor.getString(2));
+		a.setYear(cursor.getString(3));
+		a.setStyle(cursor.getString(4));
+		a.setProgram(cursor.getString(5));
+		a.setLocation(cursor.getString(6));
+		a.setLatitude(cursor.getDouble(7));
+		a.setLongitude(cursor.getDouble(8));
+		a.setCost(cursor.getString(9));
+		a.setOpenhours(cursor.getString(10));
+		a.setRID(cursor.getInt(11));
+		a.setRIDi(cursor.getInt(12));
+
+		// Make sure to close the cursor
+		cursor.close();
+		return a;
+	}
+
+	/**
+	 * Get a list of site names in List<String>
+	 * 
+	 * @return
+	 */
+	public List<String> getSiteList() {
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				new String[] { MySQLiteHelper.COLUMN_SITE }, null, null, null,
+				null, null);
+
+		List<String> listOfSite = new ArrayList<String>();
+
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			listOfSite.add(cursor.getString(0));
+			cursor.moveToNext();
+		}
+
+		// Make sure to close the cursor
+		cursor.close();
+		return listOfSite;
+	}
+
+	/**
+	 * Get a list of key-value pairs of <architect, list of sites>
+	 * 
+	 * @return
+	 */
+	public Map<String, List<String>> getArchitectList() {
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				new String[] { MySQLiteHelper.COLUMN_ARCHITECT,
+						MySQLiteHelper.COLUMN_SITE }, null, null, null, null,
+				null);
+
+		// List<String> listOfArchitect = new ArrayList<String>();
+		Map<String, List<String>> architectList = new LinkedHashMap<String, List<String>>();
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			String architect = cursor.getString(0);
+			String site = cursor.getString(1);
+			if (architectList.containsKey(architect)) {
+				architectList.get(architect).add(site);
+			} else {
+				List<String> sitelist = new ArrayList<String>();
+				sitelist.add(site);
+				architectList.put(architect, sitelist);
+			}
+			cursor.moveToNext();
+		}
+
+		// Make sure to close the cursor
+		cursor.close();
+		return architectList;
+	}
+
+	/**
+	 * Get a list of key-value pairs of <style, list of sites>
+	 * 
+	 * @return
+	 */
+	public Map<String, List<String>> getStyleList() {
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				new String[] { MySQLiteHelper.COLUMN_STYLE,
+						MySQLiteHelper.COLUMN_SITE }, null, null, null, null,
+				null);
+
+		// List<String> listOfArchitect = new ArrayList<String>();
+		Map<String, List<String>> styleList = new LinkedHashMap<String, List<String>>();
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			String styles = cursor.getString(0);
+			String site = cursor.getString(1);
+			Scanner s = new Scanner(styles);
+			s.useDelimiter(", ");
+			while (s.hasNext()) {
+				String style = s.next();
+
+				if (styleList.containsKey(style)) {
+					styleList.get(style).add(site);
+				} else {
+					List<String> sitelist = new ArrayList<String>();
+					sitelist.add(site);
+					styleList.put(style, sitelist);
+				}
+			}
+			cursor.moveToNext();
+		}
+
+		// Make sure to close the cursor
+		cursor.close();
+		return styleList;
+	}
+
+	public Map<String, List<String>> getPeriodList() {
+		Cursor cursor = database.query(MySQLiteHelper.TABLE_ARCHITECTURE,
+				new String[] { MySQLiteHelper.COLUMN_YEAR,
+						MySQLiteHelper.COLUMN_SITE }, null, null, null, null,
+				null);
+
+		// List<String> listOfArchitect = new ArrayList<String>();
+		Map<String, List<String>> architectList = new LinkedHashMap<String, List<String>>();
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			String year = cursor.getString(0);
+			String site = cursor.getString(1);
+
+			int startyear = Integer.parseInt(year.substring(0, 4));
+			if (startyear - (startyear / 100) * 100 >= 50) {
+				year = "Late " + year.substring(0, 2) + "00s";
+			} else {
+				year = "Early " + year.substring(0, 2) + "00s";
+			}
+
+			if (architectList.containsKey(year)) {
+				architectList.get(year).add(site);
+			} else {
+				List<String> sitelist = new ArrayList<String>();
+				sitelist.add(site);
+				architectList.put(year, sitelist);
+			}
+
+			cursor.moveToNext();
+		}
+
+		// Make sure to close the cursor
+		cursor.close();
+		return architectList;
+	}
+
+	private Architecture cursorToArchitecture(Cursor cursor) {
+		Architecture a = new Architecture();
+		a.setId(cursor.getLong(0));
+		a.setSite(cursor.getString(1));
+		a.setArchitect(cursor.getString(2));
+		a.setYear(cursor.getString(3));
+		a.setStyle(cursor.getString(4));
+		a.setProgram(cursor.getString(5));
+		a.setLocation(cursor.getString(6));
+		a.setLatitude(cursor.getDouble(7));
+		a.setLongitude(cursor.getDouble(8));
+		a.setCost(cursor.getString(9));
+		a.setOpenhours(cursor.getString(10));
+		a.setRID(cursor.getInt(11));
+		a.setRIDi(cursor.getInt(12));
+		return a;
+	}
+
+	public boolean enterDataOnFirstLaunch() {
+		open();
+		createArchitecture(
+				"Basilica de La Sagrada Familia",
+				"Antoni Gaudi",
+				"1882 - Unfinished",
+				"Modernism, Art Nouveau",
+				"Church",
+				"Carrer de Mallorca, 401 08013 Barcelona",
+				41.4039639,
+				2.1751516,
+				"General entry- 17 \nStudent discount- 13 \nOther discount- 16% with Barcelona Card",
+				"Apr-Sep: 9:00-20:00\nOct-Mar: 9:00-18:00\nDec 25&26 and Jan 01&06: 9:00-14:00",
+				R.drawable.sagrada_familia, R.drawable.sagrada_familia);
+		createArchitecture(
+				"Casa Mila",
+				"Antoni Gaudi",
+				"1907",
+				"Modernism, Art Nouveau",
+				"Housing, Musem",
+				"Carrer de Provença, 261, 08008, Barcelona",
+				41.3953008,
+				2.1620185,
+				"General entry-16.50 \nStudent price- 14.85 \n",
+				"Nov-Feb: 9:00-18:30\nMar-Oct: 9:00-20:00\nCLOSED: Dec 25&26 and Jan 1&6",
+				R.drawable.casa_mila_b, R.drawable.casa_mila_i);
+		createArchitecture(
+				"Casa Batllo",
+				"Antoni Gaudi",
+				"1877",
+				"Modernism, Art Nouveau",
+				"Housing, Musem",
+				"Passeig de Gràcia, 43, 08007 Barcelona",
+				41.3917,
+				2.165,
+				"General entry- 20.35 \nStudent price- 16.30 \nGroup price (+20 students)- 17.30",
+				"9:00-21:00 Everyday", R.drawable.casa_batllo_b,
+				R.drawable.casa_batllo_i);
+		createArchitecture(
+				"Barcelona Cathedral",
+				"Unknown",
+				"1448",
+				"Gothic",
+				"Church",
+				"Plaça de la Seu, 08002 Barcelona",
+				41.38389,
+				2.17639,
+				"Free \nVisit to Choir- 2.80 (general), 2.50 (groups) \nVisit to Rooftop - 3.00 (general), 2.50 (groups)",
+				"Mon-Sat: 8:00-12:30, 17:15-19:30\nCLOSED: Sunday",
+				R.drawable.barcelona_cathedral_b,
+				R.drawable.barcelona_cathedral_i);
+		createArchitecture("Barcelona Pavilion", "Ludwig Mies Van der Rohe",
+				"1929", "Modernism", "Pavilion",
+				"Av. Francesc Ferrer i Guàrdia, 7, 08038 Barcelona", 41.3706,
+				2.15, "General entry- 5.00 \nStudent price- 2.60",
+				"10:00-20:00", R.drawable.barcelona_pavillion_b,
+				R.drawable.barcelona_pavillion_i);
+		createArchitecture(
+				"Parc Güell",
+				"Antoni Gaudi",
+				"1914",
+				"Modernism, Art Nouveau",
+				"Garden, Park",
+				"Carrer d'Olot, 5, 08024 Barcelona",
+				41.4134884,
+				2.1531281,
+				"Free",
+				"Dec-Feb: 10:00-18:00\nMar&Nov: 10:00-19:00\nApr&Oct: 10:00-20:00\nMay-Sep: 10:00-21:00",
+				R.drawable.parc_guell_b, R.drawable.parc_guell_i);
+		createArchitecture(
+				"Picasso Museum",
+				"Jaime Sabartés (founder)",
+				"1963",
+				"Gothic civic Catalan",
+				"Museum",
+				"Carrer de Montcada, 15-23, 08003 Barcelona",
+				41.3853,
+				2.1806,
+				"General entry- 11 \nOther discount: \nFree on first Sunday of every month\nFree on every Sunday after 3 pm.",
+				"Tue-Sun: 10:00-20:00", R.drawable.picasso_museum_b,
+				R.drawable.parc_guell_i);
+		createArchitecture(
+				"Plaça d'Espanya",
+				"Josep Amargos, Josep Maria Jujol, Miquel Blay, Nicolau Maria Rubió i Tudurí",
+				"1929", "N/A", "Plaza", "Placa d'Espanya, Barcelona",
+				41.3750931, 2.1491682, "Free", "24/7",
+				R.drawable.placa_espanya_b, R.drawable.parc_guell_i);
+		createArchitecture("Agbar Tower", "Jean Nouvel", "2004",
+				"Contemporary", "Office Space",
+				"Avinguda Diagonal, 211, 08018 Barcelona", 41.4033, 2.1894,
+				"N/A", "Not open to public", R.drawable.agbar_tower_b,
+				R.drawable.agbar_tower_i);
+		createArchitecture("Arc de Triomf", "Josep Vilaseca y Casanovas",
+				"1888", "Neo-Mudéjar", "Monument",
+				"Passeig Lluis Companys, Barcelona", 41.3908, 2.1806, "Free",
+				"24/7", R.drawable.arc_de_triomph_b,
+				R.drawable.arc_de_triomph_i);
+		createArchitecture(
+				"MNAC/Montjuic Palace",
+				"Eugenio Cendoya,Enric Catà, Pere Domènech i Roura",
+				"1929",
+				"Spanish Renaissance",
+				"Museum",
+				"Parc de Montjuïc, 08038 Barcelona",
+				41.368333,
+				2.153333,
+				"General: 12\n(valid for two days within a month of purchase)\nStudents: 30% discount (with valid card)\nFree entrance:Saturdays from 3 pm,\n1st Sunday of each month\nMay 18th: International Museum Day",
+				"May-Sep: Tue-Sat: 10:00-20:00\nOct-Apr: Tue-Sat: 10:00-18:00\nSunday and public holidays: 10:00-15:00\nMonday:closed (except public holidays)\nClosed: January 1st, May 1st and December 25th",
+				R.drawable.montjuic_castle_b, R.drawable.montjuic_castle_i);
+		createArchitecture(
+				"Torres Venecianas",
+				"Ramon Reventòs",
+				"1927-1929",
+				"Romanesque",
+				"Monument",
+				"Intersection of Gran Via and Avenida del Parallel (Plaza de España)",
+				41.37403, 2.149801, "N/A", "They are closed as of 2013",
+				R.drawable.torres_venecianes_b, R.drawable.torres_venecianes_i);
+		createArchitecture(
+				"Parc de la Ciutadella",
+				"Fountain by Josep Fontserè",
+				"1887",
+				"insert style here",
+				"Garden, Park",
+				"Pg Picasso, 21  08018 Barcelona",
+				41.38806,
+				2.1875,
+				"Free",
+				"Dec-Feb: 10:00-18:00\nMar & Nov: 10:00-19:00\nApr & Oct: 10:00-20:00\nMay-Sep: 10:00-21:00",
+				R.drawable.parc_de_la_ciutadella_b,
+				R.drawable.parc_de_la_ciutadella_i);
+		createArchitecture(
+				"Parc del Laberint",
+				"Joan Antoni Desvalls i d'Ardena, Domenico Bagutti, Elies Rogent",
+				"1880",
+				"Neoclassical, 19th Century Romantic",
+				"Garden, Park",
+				"Pg. dels Castanyers, 1 Barcelona",
+				41.440278,
+				2.145556,
+				"General entry- 2.23 \nStudent price- 1.42 \nOther discounts: \nFor groups (+15 students): 10%\nFree on Sunday, Wednesday & September 24",
+				"May-Aug: 10:00-21:00\nApril & Sep: 10:00-20:00\nMar & Oct: 10:00-19:00\nNov-Feb: 10:00-18:00",
+				R.drawable.parc_del_laberint_b, R.drawable.parc_del_laberint_i);
+		createArchitecture(
+				"Parc de Joan Miró",
+				"Beth Galí",
+				"1979",
+				"insert style here",
+				"Garden, Park",
+				"Aragó, 2  08015 Barcelona",
+				41.377778,
+				2.146944,
+				"insert cost here",
+				"Dec-Feb: 10:00-18:00\nMar & Nov: 10:00-19:00\nApr & Oct: 10:00-20:00\nMay-Sep: 10:00-21:00",
+				R.drawable.parc_de_joan_miro_b, R.drawable.parc_de_joan_miro_i);
+		createArchitecture("Plaça Reial", "Francesc Daniel Molina i Casamajó",
+				"1800s", "Art Nouveau", "Plaza",
+				"Placa Reial, Barri Gotic, Barcelona", 41.38, 2.175,
+				"insert cost here", "24/7", R.drawable.placa_reial_b,
+				R.drawable.placa_reial_i);
+		createArchitecture(
+				"Torre de Collserola",
+				"Norman Foster",
+				"1992",
+				"Contemporary",
+				"Communications Tower",
+				"Carretera Vallvidrera-Tibidabo, S/N, Tibidabo hill, 08017 Barcelona",
+				41.4172,
+				2.1142,
+				"insert cost here",
+				"Apr-June, Sept: Wed-Fri: 11:00-14:00, 15:30-18:00\nSat-Sun: 11:00-14:00, 15:30-19:00\nJuly & Aug: Wed-Fri: 11:00-14:00, 15:30-19:00\nSat-Sun: 11:00-14:00, 15:30-20:00\nOct-Mar Wed-Fri: 11:00-14:00, 15:30-17:00; Sat-Sun: 1111:00-14:00, 15:30-18:00",
+				R.drawable.torre_de_collserola_b,
+				R.drawable.torre_de_collserola_i);
+		createArchitecture("Temple Expiatori de Sagrat Cor", "Enric Sagnier",
+				"1961", "Neogothic", "Church",
+				"Carrer Muntadas, 37  08014 Barcelona", 41.42208, 2.11886,
+				"insert cost here", "insert open hours here",
+				R.drawable.temple_expiatori_de_sagrat_cor_b,
+				R.drawable.temple_expiatori_de_sagrat_cor_i);
+		createArchitecture("Parc de la Espanya Industrial",
+				"Luis Peña Ganchegui, Anton Pagola, Monserrat Ruiz", "1985",
+				"insert style here", "Park",
+				"Carrer Muntadas, 37, 08014 Barcelona", 41.376962, 2.140485,
+				"insert cost here", "insert open hours here",
+				R.drawable.parc_de_la_espanya_industrial_b,
+				R.drawable.parc_de_la_espanya_industrial_i);
+		createArchitecture("Cementiri de Montjuic", "Leandre Albareda",
+				"1883", "Classic, Gothic", "Cementary, Garden, Park",
+				"Carrer de la Mare de Déu de Port, 56, 08038 Barcelona",
+				41.353889, 2.155556, "Free", "08:00-18:00 Everyday",
+				R.drawable.cementiri_de_montjuic_b,
+				R.drawable.cementiri_de_montjuic_i);
+		createArchitecture("Camp Nou",
+				"Francesc Mitjans, Josep Soteras, Lorenzo García-Barbón",
+				"1957", "Contemporary", "Sports Arena",
+				"Carrer d'Aristides Maillol, s/n, 08028 Barcelona", 41.38087,
+				2.122802, "General entry- 24.00 \nStudent price- 17.00",
+				"insert open hours here", R.drawable.camp_nou_b,
+				R.drawable.camp_nou_i);
+		createArchitecture("Santa Maria del Mar",
+				"Berenguer de Montagut, Ramon Despuig", "1383",
+				"Catalan Gothic", "Church-Basilica",
+				"Plaça de Santa Maria, 1, 08003 Barcelona", 41.383611,
+				2.181944, "Free", "insert open hours here",
+				R.drawable.santa_maria_del_mar_b,
+				R.drawable.santa_maria_del_mar_i);
+		createArchitecture(
+				"Monestir de Pedralbe",
+				"Elisenda de Montcada (founder)",
+				"1326",
+				"Gothic",
+				"Monastery",
+				"Baixada del Monestir, 9, 08034 Barcelona",
+				41.395556,
+				2.112222,
+				"General entry- 7.00 \nStudent price- 5.00 \nOther discount: Free with Barcelona Card",
+				"insert open hours", R.drawable.monestir_de_pedralbes_b,
+				R.drawable.monestir_de_pedralbes_i);
+		createArchitecture("Palau de La Musica", "Lluís Domènech i Montaner",
+				"1908", "Modernism, Renaixença", "Concert Hall",
+				"C/ Palau de la Música, 4-6, 08003 Barcelona", 41.3875, 2.175,
+				"N/A \nDepends on the concert", "insert open hours here",
+				R.drawable.palau_de_la_musica_b,
+				R.drawable.palau_de_la_musica_i);
+		createArchitecture("Palau Güell", "Antoni Gaudi", "1886",
+				"Modernism, Art Nouveau", "Museum, Housing",
+				"Carrer Nou de la Rambla, 3-5, 08001 Barcelona", 41.379183,
+				2.174445, "General entry- 12.00 \nStudent price- 8.00",
+				"insert open hours here", R.drawable.palau_guell_b,
+				R.drawable.palau_guell_i);
+		createArchitecture("Hospital Sant Creu y Sant Pau",
+				"Lluís Domènech i Montaner", "1930", "Modernism", "Hospital",
+				"Carrer Sant Quintí, 89, 08026 Barcelona", 41.412778, 2.174444,
+				"Free", "insert open hours here",
+				R.drawable.hospital_sant_creu_y_sant_pau_b,
+				R.drawable.hospital_sant_creu_y_sant_pau_i);
+		createArchitecture(
+				"Parc del Guinardo",
+				"Jean-Claude Nicolas Forestier",
+				"1918",
+				"insert style here",
+				"Garden, Park",
+				"Plaça del Nen de la Rutlla, Carrer de Garriga i Roca and Carrer de Florència",
+				41.419536, 2.169669, "Free", "insert open hours here",
+				R.drawable.parc_del_guinardo_b, R.drawable.parc_del_guinardo_i);
+		createArchitecture("Miró Museum", "Josep Lluis Sert", "1975",
+				"Modernism, Mediterranean", "Museum",
+				"Parc de Montjuïc, s/n, 08038 Barcelona", 41.368611, 2.16,
+				"General entry- 11.00 \nStudent price- 7.00",
+				"insert open hours", R.drawable.miro_museum_b,
+				R.drawable.miro_museum_i);
+		createArchitecture("Fundacio Antoni Tapies", "Antoni Tàpies", "1984",
+				"Modernism, Contemporary", "Museum",
+				"Carrer d'Aragó, 255, 08007 Barcelona", 41.391667, 2.163611,
+				"General entry- 7.00 \nStudent price- 5.60 ",
+				"insert open hours here", R.drawable.fundacio_antoni_tapies_b,
+				R.drawable.fundacio_antoni_tapies_i);
+		createArchitecture("Montjuic Communications Tower",
+				"Santiago Calatrava", "1989", "Modernism",
+				"Communications Tower, Monument",
+				"Parc de Montjuïc, near the Palau Sant Jordi", 41.364167,
+				2.150556, "N/A", "N/A",
+				R.drawable.montjuic_communications_tower_b,
+				R.drawable.montjuic_communications_tower_i);
+		createArchitecture("MACBA", "Richard Meier", "1995",
+				"Contemporary, Rationalist", "Museum",
+				"Plaça dels Àngels, 1, 08001 Barcelona", 41.383333, 2.166944,
+				"General entry- 9.00 \nStudent price- 7.00",
+				"insert open hours here", R.drawable.macba_b,
+				R.drawable.macba_i);
+		createArchitecture("Gran Teatre de Liceu", "Miquel Garriga i Roca",
+				"1847", "Eclecticism", "Theatre, Concert Hall",
+				"La Rambla, 51, 08002 Barcelona", 41.380278, 2.173611, "N/A",
+				"insert open hours here", R.drawable.gran_teatre_de_liceu_b,
+				R.drawable.gran_teatre_de_liceu_i);
+		createArchitecture("Plaça del Rey", "Francesc Daniel Molina",
+				"1300 insert year here", "Gothic, Renaissance", "Plaza",
+				"Plaza del Rey, s/n 08002 Barcelona", 41.384164, 2.177567,
+				"Free", "24/7", R.drawable.placa_del_rey_b,
+				R.drawable.placa_del_rey_i);
+		createArchitecture("Les Arenes", "August Font i Carreras", "1900",
+				"Moorish", "Bullring, Mall",
+				"Gran Via de les Corts Catalanes, 373-385, 08015 Barcelona",
+				41.3761, 2.14946, "Free \n1.00 (Access to rooftop)",
+				"insert open hours", R.drawable.les_arenes_b,
+				R.drawable.les_arenes_i);
+		createArchitecture("Montjuic Castle", "Juan Martin Cermeño", "1640",
+				"Castle", "Castle",
+				"Carretera de Montjuïc, 66, 08038 Barcelona, Spain", 41.363381,
+				2.166232, "Free",
+				"Oct-Mar: Mon-Sun: 9:00-19:00/nApr-Sep: Mon-Sun: 9:00-21:00",
+				R.drawable.montjuic_castle_b, R.drawable.montjuic_castle_i);
+		return true;
+
+	}
+}

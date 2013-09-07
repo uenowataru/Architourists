@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Architourists</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="button_connect">Connecting..</string>
+    <string name="button_send">Send</string>
+    <string name="connect_result">Connect</string>
+    <string name="button_PR">Predetermined Routes</string>
+    <string name="button_VA">View Architecture</string>
+    <string name="button_VM">View Map</string>
+    <string name="review_Title"><b><u>Reviews for: </u></b></string>
+    <string name="custom_info_contents">Custom info contents</string>
+    <string name="custom_info_window">Custom info window</string>
+    <string name="default_info_window">Default info window</string>
+    <string name="clear_map">Clear</string>
+    <string name="reset_map">Reset</string>
+    <string name="map_not_ready">Map is not ready yet</string>
+    <string name="archinfo_Title">Sagrada Familia</string>
+    <string name="archinfo_Info">This is a quick info</string>
+    <string name="archinfo_Text">This is the long info</string>
+    <string name="review_username">Username</string>
+    <string name="review_comment">Comment</string>
+    <string name="archinfo_infoTitle"><u>Description:</u></string>
+    
+    
+</resources>

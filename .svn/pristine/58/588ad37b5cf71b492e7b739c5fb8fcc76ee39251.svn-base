@@ -1,0 +1,106 @@
+package edu.gatech.architourists;
+
+//this is a mockup class for emulating the table
+public class ArchTable {
+	public static final String sf = "La Sagrada Familia", pg = "Parc Guell",
+			cm = "Casa Mila", mb = "MACBA", at = "Agbar Tower", smdm = "Santa Maria del Mar",
+		    mdp = "Monestir de Pedralbe", tdc = "Torre de Collserola", pdlm = "Palau de La Musica";
+
+	public static String[] getList(){
+		return new String[]{sf,pg,cm,mb};
+	}
+	// return some kind of string or int depending on which project we want
+	public static String getText(String site) {
+		String text = "Dummy text in place of information about the site that will be updated as we develop the app.";
+
+		if (site.equals(sf))
+			text = "The Basílica i Temple Expiatori de la Sagrada Família or in English The Basilica and Expiatory Church of the Holy Family is an infamous project known for the fact that it is still under construction. Construction for this site began in 1882 but Architect Antoni Gaudi did not get involved until 1883 mixing Gothic and Art Nouveau elements to the basilica. Upon Gaudi’s death in 1926, La Sagrada Familia was only between 15 and 25 percent complete and when asked about the slow construction process Gaudi responded “my client is not in a hurry.” Construction resumed until the Spanish Civil War in 1936. The church was never designed to be a cathedral (the seat of a bishop) which is why in November of 2010 it was consecrated by Pope Benedict XVI as a minor basilica. "
+					+ "\nThe church, upon completion, will have three grand façades: the Nativity facade to the East, the Passion facade to the West, and the Glory facade to the South(this one has not been completed). The Nativity facade is dedicated to the birth of Jesus and is decorated with scenes that allude to the creation of life. The Passion facade is dedicated to the Passion of Christ (Jesus’s suffering during His crucifixion) and is reduced to a barebones(very simple) style of construction. The Glory facade (not completed) is going to show the ascension of Christ to heaven and the road believers have to take to get there. This facade will also depict Hell and purgatory.";
+		if (site.equals(pg))
+			text = "This pavilion was designed as the German Pavilion for the 1929 International Exposition in Barcelona.  The event was 6 months long and afterwards the pavilion was destroyed because the German government didn’t find a buyer. After many years, however, In 1980 Oriol Bohigas put the project for reconstruction in motion in 1980, designating the architects Ignasi de Solà-Morales, Cristian Cirici and Fernando Ramos to research, design and supervise the reconstruction.  It became a keypoint in Mies Van der Rohe’s career and also of the century as emblematic of the Modernist Movement.  As shocking as it may seem, the Pavilion itself had no real use .  The work of Mies is very much brought out in this pavilion with his ongoing motto through his career, “less is more.” The Pavilion is assymetric and fluid with a continuous flow of space.  Wall transitions are made of both glass and marble. "
+					+ "\n Mies always tried to use the most minimal possible in his buildings in order to keep them standing. He always worked on a grid and he always designed everything down to where the furniture was placed.  In the pavilion we can see this with the mullions and floor. The 4 corner mullions and floor cracks line up perfectly.  The mullions also, as a way to show minimalism, are in the shape of a cross in order to take away the most of the structure possible, visually. Mies was known also for using the finest of materials in all of his structures. Here, the Pavilion uses 4 different types of marble, Roman Travertine, Green Alpine, Ancient Green, and Golden Onyx, and 4 different types of glass, transparent, milky white, translucent, and opaque black. "
+					+ "\n Mies always wanted to give off the feel of enclosed space, without ever having the space actually enclosed. Also, Mies always tried to make a sense, at some point, of looking from an non-enclosed space, through the “enclosed” space, to another non-enclosed area.  This can be seen by the way the walls are partitioned to where they do not make enclosing corners.";
+		if (site.equals(cm))
+			text = "This pavilion was designed as the German Pavilion for the 1929 International Exposition in Barcelona.  The event was 6 months long and afterwards the pavilion was destroyed because the German government didn’t find a buyer. After many years, however, In 1980 Oriol Bohigas put the project for reconstruction in motion in 1980, designating the architects Ignasi de Solà-Morales, Cristian Cirici and Fernando Ramos to research, design and supervise the reconstruction.  It became a keypoint in Mies Van der Rohe’s career and also of the century as emblematic of the Modernist Movement.  As shocking as it may seem, the Pavilion itself had no real use .  The work of Mies is very much brought out in this pavilion with his ongoing motto through his career, “less is more.” The Pavilion is assymetric and fluid with a continuous flow of space.  Wall transitions are made of both glass and marble. "
+					+ "\n Mies always tried to use the most minimal possible in his buildings in order to keep them standing. He always worked on a grid and he always designed everything down to where the furniture was placed.  In the pavilion we can see this with the mullions and floor. The 4 corner mullions and floor cracks line up perfectly.  The mullions also, as a way to show minimalism, are in the shape of a cross in order to take away the most of the structure possible, visually. Mies was known also for using the finest of materials in all of his structures. Here, the Pavilion uses 4 different types of marble, Roman Travertine, Green Alpine, Ancient Green, and Golden Onyx, and 4 different types of glass, transparent, milky white, translucent, and opaque black. "
+					+ "\n Mies always wanted to give off the feel of enclosed space, without ever having the space actually enclosed. Also, Mies always tried to make a sense, at some point, of looking from an non-enclosed space, through the “enclosed” space, to another non-enclosed area.  This can be seen by the way the walls are partitioned to where they do not make enclosing corners.";
+		if (site.equals(mb))
+			text = "This pavilion was designed as the German Pavilion for the 1929 International Exposition in Barcelona.  The event was 6 months long and afterwards the pavilion was destroyed because the German government didn’t find a buyer. After many years, however, In 1980 Oriol Bohigas put the project for reconstruction in motion in 1980, designating the architects Ignasi de Solà-Morales, Cristian Cirici and Fernando Ramos to research, design and supervise the reconstruction.  It became a keypoint in Mies Van der Rohe’s career and also of the century as emblematic of the Modernist Movement.  As shocking as it may seem, the Pavilion itself had no real use .  The work of Mies is very much brought out in this pavilion with his ongoing motto through his career, “less is more.” The Pavilion is assymetric and fluid with a continuous flow of space.  Wall transitions are made of both glass and marble. "
+					+ "\n Mies always tried to use the most minimal possible in his buildings in order to keep them standing. He always worked on a grid and he always designed everything down to where the furniture was placed.  In the pavilion we can see this with the mullions and floor. The 4 corner mullions and floor cracks line up perfectly.  The mullions also, as a way to show minimalism, are in the shape of a cross in order to take away the most of the structure possible, visually. Mies was known also for using the finest of materials in all of his structures. Here, the Pavilion uses 4 different types of marble, Roman Travertine, Green Alpine, Ancient Green, and Golden Onyx, and 4 different types of glass, transparent, milky white, translucent, and opaque black. "
+					+ "\n Mies always wanted to give off the feel of enclosed space, without ever having the space actually enclosed. Also, Mies always tried to make a sense, at some point, of looking from an non-enclosed space, through the “enclosed” space, to another non-enclosed area.  This can be seen by the way the walls are partitioned to where they do not make enclosing corners.";
+		// text =
+		// "This pavilion was designed as the German Pavilion for the 1929 International Exposition in Barcelona. ";
+		return text;
+	}
+
+	public static String getArchitect(String site) {
+		String architect = "";
+		if (site.equals(sf))
+			architect = "Antonio Gaudi";
+		if (site.equals(pg))
+			architect = "Antonio Gaudi";
+		if (site.equals(cm))
+			architect = "Antonio Gaudi";
+		if (site.equals(mb))
+			architect = "Richard Meier";
+
+		return architect;
+
+	}
+	
+	public static String getQuickInfo(String site){
+		String quickinfo = "2050 haha 200$ entry fee no discount";
+		if (site.equals(sf))
+			quickinfo = "1882 - Unfinished" + "General entry- 17.00 \n Student price- 13.00 \n + Other discount- 16% with Barcelona Card";
+		return quickinfo;
+	}
+
+	public static int getImage(String site) {
+
+		int rid = 0;
+		/*
+		if (site.equals(pg))
+			rid = R.drawable.parcguell;
+		if (site.equals(sf))
+			rid = R.drawable.sagrada_familia;
+		if (site.equals(cm))
+			rid = R.drawable.casamila;
+		if (site.equals(mb))
+			rid = R.drawable.macba;
+			*/
+		return rid;
+	}
+	
+	//returns the list of the sites organized by style
+	public static String[][] getStyleList(){
+		String[] modern = {mb, pdlm};
+		String[] artnouveau = {sf,pg,cm};
+		String[] contemp = {at, tdc};
+		String[] gothic = {smdm, mdp};
+		
+		return new String[][]{modern,artnouveau, contemp, gothic};
+	}
+	public static String[][] getArchitectList(){
+		String[] gaudi = {sf,pg,cm};
+		String[] meier = {mb};
+		String[] other = {};
+		return new String[][]{gaudi, meier, other};
+	}
+	public static String[][] getPeriodList(){
+		String[] tenth = {sf,pg};
+		String[] fourteenth = {mb};
+		String[] nineteenth = {cm};
+		return new String[][]{tenth, fourteenth, nineteenth};
+	}
+
+	public static String[] getArchitectNames(){
+		return new String[]{"Antonio Gaudi", "Richard Meier", "Other"};
+	}
+	
+	public static String[] getStyleNames(){
+		return new String[]{"Modern", "Art Nourveau", "Contemporary", "Gothic"};
+	}
+	public static String[] getPeriodNames(){
+		return new String[]{"10th century","14th Century", "19th century"};
+	}
+}

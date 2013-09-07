@@ -1,0 +1,410 @@
+package edu.gatech.architourists;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+
+public class ReviewActivity extends Activity {
+	private String geturl, seturl, siteaddress, sitename;
+	private final int TIMEOUT_MILLISEC = 2000;
+	private boolean sentReview = false, sorted = false; 
+    public final static String SITE_NAME = "edu.gatech.architourists.SITE_NAME";
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_review);
+		
+		Intent intent = getIntent();
+		sitename = intent.getStringExtra(SITE_NAME);
+		siteaddress = getAddress(sitename);
+		
+		//siteaddress = "SagradaFamilia";
+		//sitename = "Sagrada Familia";
+		seturl = "http://architourists.co.nf/acreateReview.php";
+		geturl = "http://architourists.co.nf/agetReview.php";
+		
+		TextView textView1 = (TextView) findViewById(R.id.review_Title);
+		textView1.setText("Reviews for " + sitename);
+		
+		connect(null);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+	public void connect(View view){		
+	    new getOperation().execute(geturl);
+	}
+	
+	public void send(View view) {
+		EditText name = (EditText) findViewById(R.id.editText1);
+		RatingBar ratingB = (RatingBar) findViewById(R.id.ratingBar1);
+		EditText commentT = (EditText) findViewById(R.id.editText3);
+
+		String username = fixString(name.getText().toString());
+		int rating = (int) ratingB.getRating();
+		String comment = fixString(commentT.getText().toString());
+		
+		TextView tv = (TextView) findViewById(R.id.notification);
+		if(comment.length() < 10){
+			tv.setText("*You have to enter more than 10 characters in the comment.");
+		}
+		if(rating < 1){
+			tv.setText("*Please give the site a rating");
+		}
+		if(username.length() < 3){
+			tv.setText("*Username has to be more than three characters");
+		}
+		if(sentReview){
+	        Toast.makeText(this, "Review Already Sent",
+	                Toast.LENGTH_LONG).show();
+		}
+		
+		if (username.length() > 2 && rating > 0 && comment.length() > 9 && !sentReview) {
+		    new setOperation().execute(getJSON(username, rating, comment, seturl));
+			
+			// setTable(name.getText().toString(), (int) ratingB.getRating(),
+			// commentT.getText().toString(), seturl);
+			connect(null);
+			sentReview=true;
+	        Toast.makeText(this, "Review Successfully Sent",
+	                Toast.LENGTH_LONG).show();
+		}
+	}
+	
+	private String fixString(String str){
+		String result = "";
+		for(int i = 0; i<str.length(); i++){
+			char c = str.charAt(i);
+			if(c == '\''){
+				result += '`';
+			}else{
+				result += str.charAt(i);
+			}
+		}
+		return result;
+	}
+	
+	private JSONObject getJSON(String Username, int Rating, String Comment, String url){
+		JSONObject json = new JSONObject();
+		try{
+			json.put("Site", siteaddress);
+        	json.put("Username", Username);
+        	json.put("Rating", Rating);
+        	json.put("Comment",Comment);
+		}catch(Exception e){
+		
+		}
+       return json;
+	}
+	
+	private void setTable(JSONObject json){
+		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		//StrictMode.setThreadPolicy(policy);
+		//String Username, int Rating, String Comment, String url
+				
+		String result = "";
+	    try {
+	        HttpParams httpParams = new BasicHttpParams();
+	        HttpConnectionParams.setConnectionTimeout(httpParams,
+	                TIMEOUT_MILLISEC);
+	        HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
+	        HttpClient client = new DefaultHttpClient(httpParams);
+	        //
+	        //String url = "http://10.0.2.2:8080/sample1/webservice2.php?" + 
+	        //             "json={\"Username\":1,\"Rating\":2,\"Comment\":3}";
+
+	        HttpPost request = new HttpPost(seturl);
+	        request.setEntity(new ByteArrayEntity(json.toString().getBytes(
+	                "UTF8")));
+	        //request.setHeader("json", json.toString());
+	        HttpResponse response = client.execute(request);
+	        
+	        Log.d("Logs","Executed http request");
+	        
+	        
+	        HttpEntity entity = response.getEntity();
+	        
+	        // Prints out the response from the url in LogCat
+	        if (entity != null) {
+	            InputStream is = entity.getContent();
+	            result = input(is);
+	            Log.d("Log", result);
+	        }
+	        
+	    } catch (Throwable t) {
+	        Toast.makeText(this, "Request failed: " + t.toString(),
+	                Toast.LENGTH_LONG).show();
+	    }
+	    
+	}
+	
+	private String input(InputStream is){
+		//convert response to string
+		String result = "";
+		try{
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(is,"iso-8859-1"),8);
+		    StringBuilder sb = new StringBuilder();
+		    String line = null;
+		    while ((line = reader.readLine()) != null) {
+		            sb.append(line + "\n");
+		    }
+		    is.close();
+
+		    result=sb.toString();
+		}catch(Exception e){
+		    Log.e("log_tag", "Error converting result "+e.toString());
+		}
+
+		return result;
+	}
+	
+	private String getAddress(String name){
+		//Log.d("log_tag","Result of address: " + result);
+		return name.replaceAll("[^a-zA-Z]", "");
+	}
+	
+	private void listView(Review[] values){
+        // Get ListView object from xml
+        ListView listView = (ListView) findViewById(R.id.listView1);
+        
+        // Defined Array values to show in ListView
+        // Define a new Adapter First parameter - Context
+        // Second parameter - Layout for the row
+        // Third parameter - ID of the TextView to which the data is written
+        // Forth - the Array of data
+        ArrayAdapter<Review> adapter = new ArrayAdapter<Review>(this,
+          android.R.layout.simple_list_item_1, android.R.id.text1, values);
+
+        
+
+        // Assign adapter to ListView
+        listView.setAdapter(adapter); 
+        
+        // ListView Item Click Listener
+
+		listView.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				Toast.makeText(
+						getApplicationContext(),
+						"Liked (not implemented)", Toast.LENGTH_LONG).show();
+			}
+
+		});
+    }
+	
+	public ArrayList<Review> getTable(String url){
+		//StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		//StrictMode.setThreadPolicy(policy);
+
+		String result = "";		
+		InputStream is = null;
+		//http post
+		try{
+	        JSONObject json = new JSONObject();
+	        json.put("Site", siteaddress);
+	        HttpParams httpParams = new BasicHttpParams();
+	        HttpConnectionParams.setConnectionTimeout(httpParams,TIMEOUT_MILLISEC);
+	        HttpConnectionParams.setSoTimeout(httpParams, TIMEOUT_MILLISEC);
+	        HttpClient client = new DefaultHttpClient(httpParams);
+
+	        HttpPost request = new HttpPost(url);
+	        request.setEntity(new ByteArrayEntity(json.toString().getBytes("UTF8")));
+	        //request.setHeader("json", json.toString());
+	        HttpResponse response = client.execute(request);
+	        
+	        Log.d("Logs","Executed http request");
+	        
+	        
+	        HttpEntity entity = response.getEntity();
+	        
+	        // Prints out the response from the url in LogCat
+	        if (entity != null) {
+	            is = entity.getContent();
+	            result = input(is);
+	            Log.d("Log", result);
+	        }
+	        /*
+		    HttpClient httpclient = new DefaultHttpClient();
+		    HttpPost httppost = new HttpPost(url);
+			HttpResponse response = httpclient.execute(httppost);
+			HttpEntity entity = response.getEntity();
+			*/
+		}catch(Exception e){
+		    Log.e("log_tag", "Error in http connection "+e.toString());
+		}
+				
+		//parse json data
+		ArrayList<Review> table = new ArrayList<Review>();
+		try{
+		    JSONArray jArray = new JSONArray(result);
+		    
+		    for(int i=0;i<jArray.length();i++){
+		            JSONObject json_data = jArray.getJSONObject(i);
+		            table.add(new Review(json_data.getInt("Id"), json_data.getString("Username"),json_data.getInt("Rating"),json_data.getString("Comment"),json_data.getInt("Vote")));
+		            /*
+		            Log.i("log_tag","Id:"+json_data.getInt("Id")+
+		                    ", Username: "+json_data.getString("Username")+
+		                    ", Rating: "+json_data.getInt("Rating")+
+		                    ", Comment: "+json_data.getString("Comment")+
+		                    ", Vote: " + json_data.getInt("Vote")
+		            );
+		            */
+		    }
+		}catch(JSONException e){
+		    Log.e("log_tag", "Error parsing data "+e.toString());
+		}
+		return table;
+	}
+	
+	public void sortButton(View v){
+		ToggleButton tb = (ToggleButton) findViewById(R.id.toggleSort);
+		Log.d("SORT","SHOU:D ROSRT");
+		tb.setChecked(!sorted);
+		sorted = !sorted;
+		connect(null);
+	}
+	
+	
+	private class Review{
+		private int Id = 0, Rating = 0, Vote = 0;
+		private String Username = "", Comment = "";
+		public Review(int Id, String Username, int Rating, String Comment, int Vote){
+			this.Id = Id;
+			this.Username = Username;
+			this.Rating = Rating;
+			this.Comment = Comment;
+			this.Vote = Vote;
+		}
+		public int getId(){
+			return Id;
+		}
+		public String getUsername(){
+			return Username;
+		}
+		public int getRating(){
+			return Rating;
+		}
+		public String getComment(){
+			return Comment;
+		}
+		public int getVote(){
+			return Vote;
+		}
+		@Override
+		public String toString(){
+			String result = "";
+			for(int x = 0 ; x<Rating; x++){
+				result += "★";
+			}
+			for(int x = 0; x<5-Rating; x++){
+				result += "☆";
+			}
+			result+= " Vote:" + Vote + "\n \"" + Comment + "\" - " + Username;
+			return result;
+		}
+	}
+
+	private class getOperation extends AsyncTask<String, Void, ArrayList<Review>>{
+		@Override
+		protected ArrayList<Review> doInBackground(String... params) {		
+			// TODO Auto-generated method stub
+			return getTable(params[0]);
+		}
+		
+		@Override
+		protected void onPostExecute(ArrayList<Review> table) {               
+			int sumratings = 0, sumreviews = 0;
+			for(Review r : table){
+				sumratings += r.getRating();
+				sumreviews++;
+			}
+			String result = "There are no reviews to show", ratingstr = "";
+			if (sumreviews > 0) {
+				int rating = (2 * sumratings + sumreviews) / (2 * sumreviews);
+				for (int x = 0; x < rating; x++) {
+					ratingstr += "★";
+				}
+				for (int x = 0; x < 5 - rating; x++) {
+					ratingstr += "☆";
+				}
+				//result = "Reviews: Average Rating: " + sumratings * 1.00 / sumreviews + "\n";
+			}else{
+		        //Toast.makeText(, "There are no reviews to show", Toast.LENGTH_LONG).show();
+			}
+			Review[] results = new Review[table.size()];
+			for(int x = 0; x<table.size() ; x++){
+				results[x] = table.get(x);
+			}
+			Log.d("SORTING", "sdhofsdafe" + sorted);
+			
+			if(sorted){
+				Log.d("SORITNG","SORTING");
+				boolean bubblesorted = true;
+				do{
+					for(int x = 1; x < results.length; x++){
+						bubblesorted = true;
+						if(results[x-1].getRating() < results[x].getRating()){
+							Object temp = results[x-1];
+							results[x-1] = results[x];
+							results[x] = (Review) temp;
+							bubblesorted=false;
+						}
+					}
+				}while(!bubblesorted);
+			}
+			
+			TextView textView1 = (TextView) findViewById(R.id.review_Title);
+			textView1.setText("Reviews for " + sitename + " " + ratingstr);
+			TextView textView = (TextView) findViewById(R.id.notification);
+			textView.setText("");
+			listView(results);
+		}
+	}
+	private class setOperation extends AsyncTask<JSONObject, Void, String>{
+		@Override
+		protected String doInBackground(JSONObject... params) {
+			setTable(params[0]);
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
+}

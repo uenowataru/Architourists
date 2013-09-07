@@ -1,0 +1,248 @@
+package edu.gatech.architourists;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import edu.gatech.architourists.database.Architecture;
+import edu.gatech.architourists.database.ArchitectureDataSource;
+
+public class ArchInfoActivity extends FragmentActivity {
+	TextView archTitle, archInfo, archDescription, popupTitle, popupText;
+	ImageView archPhoto, red_x;
+	Button btn_UserReview, btn_FullDetails, btn_BackPopup;
+	private GoogleMap mMap;
+	private UiSettings mUiSettings;
+	private Architecture a;
+	private boolean click = true;
+	PopupWindow popUp;
+
+	// private static final String MAP_FRAGMENT_TAG = "smallmap";
+	// private GoogleMap mMap;
+	// private SupportMapFragment mMapFragment;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_archinfo);
+
+		Intent intent = getIntent();
+		final String name = intent.getStringExtra(ReviewActivity.SITE_NAME);
+
+		ArchitectureDataSource ds = new ArchitectureDataSource(this);
+		ds.open();
+
+		try {
+			a = ds.getArchitecture(name);
+		} catch (Exception e) {
+			Log.d("Database exception", "IDK why");
+		}
+		ds.close();
+		//
+		// // It isn't possible to set a fragment's id programmatically so we
+		// set a
+		// // tag instead and
+		// // search for it using that.
+		// mMapFragment = (SupportMapFragment) getSupportFragmentManager()
+		// .findFragmentByTag(MAP_FRAGMENT_TAG);
+		//
+		// // We only create a fragment if it doesn't already exist.
+		// if (mMapFragment == null) {
+		// // To programmatically add the map, we first create a
+		// // SupportMapFragment.
+		// mMapFragment = SupportMapFragment.newInstance();
+		//
+		// // Then we add it using a FragmentTransaction.
+		// FragmentTransaction fragmentTransaction = getSupportFragmentManager()
+		// .beginTransaction();
+		// fragmentTransaction.add(android.R.id.content, mMapFragment,
+		// MAP_FRAGMENT_TAG);
+		// fragmentTransaction.commit();
+		// }
+
+		// setUpMapIfNeeded();
+
+		String architect, year, style, program, location, cost, openhours, moreinfo;
+		int image;
+		// if (a != null) {
+		architect = a.getArchitect();
+		year = a.getYear();
+		style = a.getStyle();
+		program = a.getProgram();
+		location = a.getLocation();
+		cost = a.getCost();
+		openhours = a.getOpenhours();
+		image = a.getRID();
+		moreinfo = a.getText();
+		
+		archTitle = (TextView) findViewById(R.id.text_archtitle);
+		archTitle.setText(name);
+		archInfo = (TextView) findViewById(R.id.text_archinfo);
+		// archInfo.setPaintFlags(archInfo.getPaintFlags() |
+		// Paint.UNDERLINE_TEXT_FLAG);
+
+		archInfo.setText(Html.fromHtml("<p> <b><u>Architect:</u></b> " + architect + "<br><b><u>Year:</u></b> " + year
+				+ "<br><b><u>Style:</u></b> " + style + "<br><b><u>Program:</u></b> " + program
+				+ "<br><b><u>Location:</u></b> " + location + "<br><b><u>Cost:</u></b> " + cost
+				+ "<br><b><u>Open hours:</u></b> " + openhours + "</p>"));
+		//archDescription = (TextView) findViewById(R.id.text_archidescription);
+		//archDescription.setText(moreinfo);
+		//archDescription.setMovementMethod(new ScrollingMovementMethod());
+		archPhoto = (ImageView) findViewById(R.id.img_archphoto);
+		archPhoto.setImageResource(image);
+		btn_UserReview = (Button) findViewById(R.id.btn_userreview);
+
+		btn_UserReview.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(ArchInfoActivity.this,
+						ReviewActivity.class);
+				intent.putExtra(ReviewActivity.SITE_NAME, name);
+				startActivity(intent);
+			}
+		});
+		
+		btn_FullDetails = (Button) findViewById(R.id.fulldetails_button);
+
+		popUp = new PopupWindow(this);
+		final RelativeLayout layout = new RelativeLayout(this);
+
+		btn_FullDetails.setOnClickListener(new OnClickListener() {
+			@Override
+			
+			public void onClick(View v) {
+				if (click) {
+					popUp.showAtLocation(layout, Gravity.BOTTOM, 0, 0);
+					popUp.update(0, 50, ((RelativeLayout) v.getParent()).getWidth()-100, ((RelativeLayout) v.getParent()).getHeight()-100);
+					click = false;
+				} else {
+					popUp.dismiss();
+					click = true;
+				}
+			}
+		});
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		layout.setPadding(20,20,20,20);
+		
+		//layout.setOrientation(LinearLayout.VERTICAL);
+		//layout.addView((View) R.id.popupbutton1, params);
+		popupTitle = new TextView(this);
+		popupText = new TextView(this);
+		popupTitle.setText(name + ":");
+		popupTitle.setTextColor(Color.WHITE);
+		popupTitle.setTextSize(25);
+		popupText.setText(moreinfo);
+		popupText.setTextColor(Color.WHITE);
+		popupText.setMovementMethod(new ScrollingMovementMethod());
+
+		red_x = new ImageView(this);
+		red_x.setImageResource(R.drawable.red_x);
+
+		red_x.setLayoutParams(params);
+		red_x.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				popUp.dismiss();
+				click = true;
+			}
+			
+		});
+		LinearLayout llayout = new LinearLayout(this);
+		llayout.setOrientation(LinearLayout.VERTICAL);
+		ScrollView scroll = new ScrollView(this);
+		llayout.addView(popupTitle);
+		scroll.addView(popupText);
+		llayout.addView(scroll);
+		
+		//LayoutParams param1 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+				
+		RelativeLayout.LayoutParams param2 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+		param2.addRule(RelativeLayout.LEFT_OF, red_x.getId());
+		layout.addView(llayout, param2);
+		
+		RelativeLayout.LayoutParams param3 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
+		param3.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+		param3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+		layout.addView(red_x,param3);
+		
+		
+		
+		popUp.setContentView(layout);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		// In case Google Play services has since become available.
+		setUpMapIfNeeded();
+	}
+
+	public void viewClick(View v) {
+		popUp.dismiss();
+		click = true;
+	}
+	private void setUpMapIfNeeded() {
+		// Do a null check to confirm that we have not already instantiated the
+		// map.
+		if (mMap == null) {
+			// Try to obtain the map from the SupportMapFragment.
+			mMap = ((SupportMapFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.smallmap)).getMap();
+			// Check if we were successful in obtaining the map.
+			if (mMap != null) {
+				setUpMap();
+			}
+		}
+	}
+
+	private void setUpMap() {
+		// mMap.setMyLocationEnabled(true);
+		mUiSettings = mMap.getUiSettings();
+		mMap.addMarker(new MarkerOptions().position(
+				new LatLng(a.getLatitude(), a.getLongitude())).title(
+				a.getSite()));
+		mUiSettings.setZoomControlsEnabled(false);
+		mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(a
+				.getLatitude(), a.getLongitude())));
+		mMap.moveCamera(CameraUpdateFactory.zoomTo(15));
+	}
+	
+	/*
+	public void fullButtonClicked(View view){
+		LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE); 
+		PopupWindow pw = new PopupWindow(inflater.inflate(R.layout.popup_fulldetails, null, false),300,300, true);
+	    //findViewById(R.layout.popup_fulldetails).setBackgroundColor(Color.WHITE);
+
+	    pw.showAtLocation(this.findViewById(R.id.text_archinfo), Gravity.CENTER, 0, 0);
+
+	    // popUp.showAtLocation(layout, Gravity.BOTTOM, 10, 10);
+	}
+	*/
+	
+}

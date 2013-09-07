@@ -1,0 +1,74 @@
+package edu.gatech.architourists;
+
+import edu.gatech.architourists.database.ArchitectureDataSource;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+
+public class MainActivity extends Activity {
+	SharedPreferences prefs = null;
+	private ArchitectureDataSource datasource;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+
+		Button btn_VA = (Button) findViewById(R.id.btn_VA);
+		Button btn_PR = (Button) findViewById(R.id.btn_PR);
+		Button btn_VM = (Button) findViewById(R.id.btn_VM);
+		btn_VA.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(MainActivity.this, VAActivity.class);
+				startActivity(intent);
+			}
+		});
+		btn_PR.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(MainActivity.this, PRActivity.class);
+				startActivity(intent);
+
+			}
+		});
+		btn_VM.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Intent intent = new Intent(MainActivity.this, VMActivity.class);
+				startActivity(intent);
+
+			}
+		});
+
+		prefs = getSharedPreferences("com.mycompany.myAppName", MODE_PRIVATE);
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		if (prefs.getBoolean("firstrun", true)) {
+			// Do first run stuff here then set 'firstrun' as false
+			// using the following line to edit/commit prefs
+			datasource = new ArchitectureDataSource(this);
+
+			if (datasource.enterDataOnFirstLaunch()) {
+				Log.v("MainActivity","Data entered upon first launch");
+				prefs.edit().putBoolean("firstrun", false).commit();
+			}else{
+				Log.v("MainActivity","Data failed to enter upon first launch");
+			}
+		}else{
+			Log.v("MainActivity","Not first launch");
+		}
+	}
+}

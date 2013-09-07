@@ -1,0 +1,29 @@
+package edu.gatech.architourists;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+public class TourActivity extends Activity {
+	TextView tourTitle;
+	TextView tourTime;
+	TextView tourInfo;
+	ImageView tourImage;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_tour);
+		Intent i = getIntent();
+		tourTitle = (TextView) findViewById(R.id.text_tourtitle);
+		tourTime = (TextView)findViewById(R.id.text_tourtime);
+		tourInfo = (TextView) findViewById(R.id.text_tourinfo);
+		tourImage = (ImageView) findViewById(R.id.image_tourimage);
+
+		tourTitle.setText(i.getStringExtra(PRActivity.TOUR_NAME));
+		tourTime.setText("Walking: appr.2hrs\t\t\tMetro:79min");
+		tourInfo.setText("A.Onix\nB.Palau G¨¹ell (15 Mins)\n\ta.	From Onix walk towards Arc de Triomf station\n\tb. Take L1 (red) train towards Hospital de Bellvitge and get off at Catalunya\n\tc.	Get off and switch to L3 (green) towards Zona Universitaria and get off at Liceu\n\td.	Walk down La Rambla towards the ocean (downhill) until Carrer Nou de La Rambla\n\te.	Turn right on Carrer Nou de La Rambla. The destination will be on the right.\nC.	Casa Battl¨® (11 mins)\n\ta.	From Palau G¨¹ell walk towards Liceu stop on La Rambla\n\tb.	Take L3 (green) train towards Trinitat Nova until Passeig de Gracia\n\tc.	Get out and Casa Battlo will be right outside the metro stop\nD.Casa Mila (7 mins)\n\ta.	From Casa Battlo walk towards Diagonal on Passeig de Gracia\n\t	b.	Casa Mila will be on the right side of the street.\nE.	La Sagrada Familia (14 mins)\n\ta.	From Casa Mila walk up Passeig De Gracia towards the Diagonal metro stop\n\tb.	Take L5 (blue) train from Diagonal towards Vall d¡¯Hebron\n\tc.	Get off at Sagrada Familia stop\nF.	Parc G¨¹ell (32 mins)\n\ta.	From La Sagrada Familia take the L5 (blue) train towards Cornella Centre until Diagonal\n\tb.	Change to L3 (green) at Diagonal and take the train towards Trinitat Nova\n\tc.	Get off at Vallcarca stop\n\td.	Walk down Avenida de Vallcarca until Carrer de les Medes\n\te.	Make a left on Carrer de les Medes\n\tf.	Follow signs to get to Parc Guell");
+	}
+}

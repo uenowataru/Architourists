@@ -1,0 +1,405 @@
+/*
+ * Copyright (C) 2012 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package edu.gatech.architourists;
+
+import java.util.List;
+
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.GoogleMap.OnInfoWindowClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener;
+import com.google.android.gms.maps.GoogleMap.OnMarkerDragListener;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import edu.gatech.architourists.database.Architecture;
+import edu.gatech.architourists.database.ArchitectureDataSource;
+
+/**
+ * This shows how to place markers on a map.
+ */
+public class VMActivity extends FragmentActivity implements
+		OnMarkerClickListener, OnInfoWindowClickListener, OnMarkerDragListener {
+	private ArchitectureDataSource datasource;
+	private List<Architecture> allArchList;
+	private List<String> allSiteNames;
+	private static final LatLng BARCELONA = new LatLng(41.403611, 2.174444);
+
+	/** Demonstrates customizing the info window and/or its contents. */
+	class CustomInfoWindowAdapter implements InfoWindowAdapter {
+		// private final RadioGroup mOptions;
+
+		// These a both viewgroups containing an ImageView with id "badge" and
+		// two TextViews with id
+		// "title" and "snippet".
+		private final View mWindow;
+		private final View mContents;
+
+		CustomInfoWindowAdapter() {
+			mWindow = getLayoutInflater().inflate(R.layout.custom_info_window,
+					null);
+			mContents = getLayoutInflater().inflate(
+					R.layout.custom_info_contents, null);
+			// mOptions = (RadioGroup)
+			// findViewById(R.id.custom_info_window_options);
+		}
+
+		@Override
+		public View getInfoWindow(Marker marker) {
+			// if (mOptions.getCheckedRadioButtonId() !=
+			// R.id.custom_info_window) {
+			// // This means that getInfoContents will be called.
+			// return null;
+			// }
+			render(marker, mWindow);
+			return mWindow;
+		}
+
+		@Override
+		public View getInfoContents(Marker marker) {
+			// if (mOptions.getCheckedRadioButtonId() !=
+			// R.id.custom_info_contents) {
+			// // This means that the default info contents will be used.
+			// return null;
+			// }
+			render(marker, mContents);
+			return mContents;
+		}
+
+		private void render(Marker marker, View view) {
+			// Passing 0 to setImageResource will clear the image view.
+			int badge = 0;
+			// Use the equals() method on a Marker to check for equals. Do not
+			// use ==.
+			String siteName = marker.getTitle();
+
+			badge = datasource.getArchitecture(siteName).getRIDi();
+			((ImageView) view.findViewById(R.id.badge)).setImageResource(badge);
+
+			String title = marker.getTitle();
+			TextView titleUi = ((TextView) view.findViewById(R.id.title));
+			if (title != null) {
+				// Spannable string allows us to edit the formatting of the
+				// text.
+				SpannableString titleText = new SpannableString(title);
+				titleText.setSpan(new ForegroundColorSpan(Color.RED), 0,
+						titleText.length(), 0);
+				titleUi.setText(titleText);
+			} else {
+				titleUi.setText("");
+			}
+
+			String snippet = marker.getSnippet();
+			TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
+			// if (snippet != null && snippet.length() > 12) {
+			// SpannableString snippetText = new SpannableString(snippet);
+			// snippetText.setSpan(new ForegroundColorSpan(Color.MAGENTA), 0,
+			// 10, 0);
+			// snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 12,
+			// snippet.length(), 0);
+			// snippetUi.setText(snippetText);
+			// } else {
+			snippetUi.setText(snippet);
+			// }
+		}
+	}
+
+	private GoogleMap mMap;
+
+	private AutoCompleteTextView mSearchText;
+	private TextView search;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_vm);
+		datasource = new ArchitectureDataSource(this);
+		datasource.open();
+		allArchList = datasource.getAllArchitectures();
+		allSiteNames = datasource.getSiteList();
+
+		search = (TextView) findViewById(R.id.search);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_dropdown_item_1line, allSiteNames);
+		mSearchText = (AutoCompleteTextView) findViewById(R.id.edit_search);
+		mSearchText.setAdapter(adapter);
+		mSearchText.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				String site = (String) parent.getItemAtPosition(position);
+				Architecture a = datasource.getArchitecture(site);
+				CameraPosition cameraPosition = new CameraPosition(new LatLng(a
+						.getLatitude(), a.getLongitude()), 15, 0, 0);
+				mMap.animateCamera(CameraUpdateFactory
+						.newCameraPosition(cameraPosition));
+				mSearchText.clearFocus();
+				//
+			}
+
+		});
+		mSearchText.setOnFocusChangeListener(new OnFocusChangeListener() {
+			InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				if (!(hasFocus)) {
+					mgr.hideSoftInputFromWindow(mSearchText.getWindowToken(), 0);
+				}
+			}
+
+		});
+		setUpMapIfNeeded();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		datasource.open();
+		setUpMapIfNeeded();
+
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		datasource.close();
+	}
+
+	private void setUpMapIfNeeded() {
+		// Do a null check to confirm that we have not already instantiated the
+		// map.
+		if (mMap == null) {
+			// Try to obtain the map from the SupportMapFragment.
+			mMap = ((SupportMapFragment) getSupportFragmentManager()
+					.findFragmentById(R.id.map)).getMap();
+			// Check if we were successful in obtaining the map.
+			if (mMap != null) {
+				setUpMap();
+			}
+		}
+	}
+
+	private void setUpMap() {
+		// Hide the zoom controls as the button panel will cover it.
+		mMap.getUiSettings().setZoomControlsEnabled(false);
+
+		// Add lots of markers to the map.
+		addMarkersToMap();
+
+		// Setting an info window adapter allows us to change the both the
+		// contents and look of the
+		// info window.
+		mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter());
+
+		// Set listeners for marker events. See the bottom of this class for
+		// their behavior.
+		mMap.setOnMarkerClickListener(this);
+		mMap.setOnInfoWindowClickListener(this);
+		mMap.setOnMarkerDragListener(this);
+
+		CameraPosition cameraPosition = new CameraPosition(BARCELONA, 12, 0, 0);
+		mMap.animateCamera(CameraUpdateFactory
+				.newCameraPosition(cameraPosition));
+		// // Pan to see all markers in view.
+		// // Cannot zoom to bounds until the map has a size.
+		// final View mapView = getSupportFragmentManager().findFragmentById(
+		// R.id.map).getView();
+		// if (mapView.getViewTreeObserver().isAlive()) {
+		// mapView.getViewTreeObserver().addOnGlobalLayoutListener(
+		// new OnGlobalLayoutListener() {
+		// @SuppressWarnings("deprecation")
+		// // We use the new method when supported
+		// @SuppressLint("NewApi")
+		// // We check which build version we are using.
+		// @Override
+		// public void onGlobalLayout() {
+		// LatLngBounds bounds = new LatLngBounds.Builder()
+		// .include(BARCELONA).build();
+		// if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+		// mapView.getViewTreeObserver()
+		// .removeGlobalOnLayoutListener(this);
+		// } else {
+		// mapView.getViewTreeObserver()
+		// .removeOnGlobalLayoutListener(this);
+		// }
+		// mMap.moveCamera(CameraUpdateFactory
+		// .newLatLngBounds(bounds, 100));
+		// }
+		// });
+		// }
+	}
+
+	private void addMarkersToMap() {
+		// Uses a colored icon.
+		// mBrisbane = mMap.addMarker(new MarkerOptions()
+		// .position(BRISBANE)
+		// .title("Brisbane")
+		// .snippet("Population: 2,074,200")
+		// .icon(BitmapDescriptorFactory
+		// .defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
+		// // Uses a custom icon.
+		// mSydney = mMap.addMarker(new MarkerOptions().position(SYDNEY)
+		// .title("Sydney").snippet("Population: 4,627,300")
+		// .icon(BitmapDescriptorFactory.fromResource(R.drawable.arrow)));
+
+		// // Creates a draggable marker. Long press to drag.
+		// mMelbourne = mMap.addMarker(new MarkerOptions().position(MELBOURNE)
+		// .title("Melbourne").snippet("Population: 4,137,400")
+		// .draggable(true));
+		// mSagradaFamilia = mMap.addMarker(new MarkerOptions()
+		// .position(SF).title("Sagrada Familia").snippet("Antoni Gaudi"));
+		// A few more markers for good measure.
+		// mPerth = mMap.addMarker(new MarkerOptions().position(PERTH)
+		// .title("Perth").snippet("Population: 1,738,800"));
+		// mAdelaide = mMap.addMarker(new MarkerOptions().position(ADELAIDE)
+		// .title("Adelaide").snippet("Population: 1,213,000"));
+
+		// Creates a marker rainbow demonstrating how to create default marker
+		// icons of different
+		// hues (colors).
+		int numMarkers = allArchList.size();
+		for (int i = 0; i < numMarkers; i++) {
+			Architecture a = allArchList.get(i);
+			mMap.addMarker(new MarkerOptions()
+					.position(new LatLng(a.getLatitude(), a.getLongitude()))
+					.title(a.getSite())
+					.snippet(a.getArchitect())
+					.icon(BitmapDescriptorFactory.defaultMarker(i * 360
+							/ numMarkers)));
+		}
+	}
+
+	private boolean checkReady() {
+		if (mMap == null) {
+			Toast.makeText(this, R.string.map_not_ready, Toast.LENGTH_SHORT)
+					.show();
+			return false;
+		}
+		return true;
+	}
+
+	/** Called when the Clear button is clicked. */
+	public void onClearMap(View view) {
+		if (!checkReady()) {
+			return;
+		}
+		mMap.clear();
+	}
+
+	/** Called when the Reset button is clicked. */
+	public void onResetMap(View view) {
+		if (!checkReady()) {
+			return;
+		}
+		// Clear the map because we don't want duplicates of the markers.
+		mMap.clear();
+		addMarkersToMap();
+	}
+
+	//
+	// Marker related listeners.
+	//
+
+	@Override
+	public boolean onMarkerClick(final Marker marker) {
+		// if (marker.equals(mPerth)) {
+		// // This causes the marker at Perth to bounce into position when it
+		// // is clicked.
+		// final Handler handler = new Handler();
+		// final long start = SystemClock.uptimeMillis();
+		// final long duration = 1500;
+		//
+		// final Interpolator interpolator = new BounceInterpolator();
+		//
+		// handler.post(new Runnable() {
+		// @Override
+		// public void run() {
+		// long elapsed = SystemClock.uptimeMillis() - start;
+		// float t = Math.max(
+		// 1 - interpolator.getInterpolation((float) elapsed
+		// / duration), 0);
+		// marker.setAnchor(0.5f, 1.0f + 2 * t);
+		//
+		// if (t > 0.0) {
+		// // Post again 16ms later.
+		// handler.postDelayed(this, 16);
+		// }
+		// }
+		// });
+		// } else if (marker.equals(mAdelaide)) {
+		// // This causes the marker at Adelaide to change color.
+		// marker.setIcon(BitmapDescriptorFactory.defaultMarker(new Random()
+		// .nextFloat() * 360));
+		// }
+		// We return false to indicate that we have not consumed the event and
+		// that we wish
+		// for the default behavior to occur (which is for the camera to move
+		// such that the
+		// marker is centered and for the marker's info window to open, if it
+		// has one).
+		return false;
+	}
+
+	@Override
+	public void onInfoWindowClick(Marker marker) {
+		Intent intent = new Intent(this, ArchInfoActivity.class);
+		intent.putExtra(ReviewActivity.SITE_NAME, marker.getTitle());
+		startActivity(intent);
+	}
+
+	@Override
+	public void onMarkerDragStart(Marker marker) {
+		// mTopText.setText("onMarkerDragStart");
+	}
+
+	@Override
+	public void onMarkerDragEnd(Marker marker) {
+		// mTopText.setText("onMarkerDragEnd");
+	}
+
+	@Override
+	public void onMarkerDrag(Marker marker) {
+		// mTopText.setText("onMarkerDrag.  Current Position: "
+		// + marker.getPosition());
+	}
+}
